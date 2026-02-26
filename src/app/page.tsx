@@ -1,65 +1,138 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { NoteInput } from "@/components/NoteInput";
+import { TaskList } from "@/components/TaskList";
+import { TaskSidePanel } from "@/components/TaskSidePanel";
+import { TaskFilters } from "@/components/TaskFilters";
+import { ProjectManager } from "@/components/ProjectManager";
+import { useSettings } from "@/lib/useSettings";
+import type { TaskWithProject, ProjectWithCount, SuggestedTask } from "@/lib/types";
 
 export default function Home() {
+  const { settings } = useSettings();
+  const [projects, setProjects] = useState<ProjectWithCount[]>([]);
+  const [tasks, setTasks] = useState<TaskWithProject[]>([]);
+  const [selectedTask, setSelectedTask] = useState<TaskWithProject | null>(null);
+  const [filterProjectIds, setFilterProjectIds] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+  const [showDone, setShowDone] = useState(false);
+
+  const fetchProjects = useCallback(async () => {
+    const res = await fetch("/api/projects");
+    const data = await res.json();
+    setProjects(data);
+  }, []);
+
+  const fetchTasks = useCallback(async () => {
+    const params = new URLSearchParams();
+    if (!showDone) params.set("status", "OPEN");
+    else params.set("status", "ALL");
+    if (filterProjectIds.length > 0) params.set("projectIds", filterProjectIds.join(","));
+    if (search.trim()) params.set("search", search.trim());
+
+    const res = await fetch(`/api/tasks?${params}`);
+    const data = await res.json();
+    setTasks(data);
+  }, [showDone, filterProjectIds, search]);
+
+  useEffect(() => {
+    fetchProjects();
+    fetchTasks();
+  }, [fetchProjects, fetchTasks]);
+
+  async function handleTasksReviewed(
+    suggestedTasks: SuggestedTask[],
+    projectId: string | null,
+    noteId: string
+  ) {
+    await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tasks: suggestedTasks.map((t) => ({
+          ...t,
+          projectId,
+          sourceNoteId: noteId,
+        })),
+      }),
+    });
+    fetchTasks();
+    fetchProjects();
+  }
+
+  async function handleToggle(id: string, status: string) {
+    await fetch(`/api/tasks/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    fetchTasks();
+  }
+
+  async function handleUpdateTask(id: string, data: Record<string, unknown>) {
+    const res = await fetch(`/api/tasks/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const updated = await res.json();
+    setSelectedTask(updated);
+    fetchTasks();
+    fetchProjects();
+  }
+
+  function handleProjectToggle(id: string) {
+    setFilterProjectIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-6">
+      <NoteInput
+        projects={projects}
+        mockAi={settings.mockAi}
+        onTasksReviewed={handleTasksReviewed}
+      />
+
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex-1 space-y-4">
+          <TaskFilters
+            projects={projects}
+            selectedProjectIds={filterProjectIds}
+            onProjectToggle={handleProjectToggle}
+            search={search}
+            onSearchChange={setSearch}
+            showDone={showDone}
+            onShowDoneToggle={() => setShowDone(!showDone)}
+          />
+          <TaskList
+            tasks={tasks}
+            onToggle={handleToggle}
+            onSelect={setSelectedTask}
+            selectedId={selectedTask?.id}
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+        <div className="w-full lg:w-72 space-y-4">
+          {selectedTask && (
+            <TaskSidePanel
+              task={selectedTask}
+              projects={projects}
+              onUpdate={handleUpdateTask}
+              onClose={() => setSelectedTask(null)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          )}
+          <ProjectManager
+            projects={projects}
+            onCreated={fetchProjects}
+            onDeleted={() => {
+              fetchProjects();
+              fetchTasks();
+            }}
+          />
         </div>
-      </main>
+      </div>
     </div>
   );
 }

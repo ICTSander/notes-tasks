@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="38" fill="#3b82f6"/>
+  <text x="96" y="78" dominant-baseline="middle" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="67" fill="white" font-weight="700">N</text>
+  <text x="96" y="138" dominant-baseline="middle" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="23" fill="rgba(255,255,255,0.85)" font-weight="500">Tasks</text>
+</svg>
