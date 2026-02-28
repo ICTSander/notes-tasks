@@ -28,7 +28,7 @@ export function Nav() {
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   pathname === l.href
                     ? "bg-accent text-white"
-                    : "text-text-muted hover:text-text-main hover:bg-gray-100"
+                    : "text-text-muted hover:text-text-main hover:bg-surface-hover"
                 }`}
               >
                 {l.label}

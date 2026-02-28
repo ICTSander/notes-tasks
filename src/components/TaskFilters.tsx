@@ -26,7 +26,7 @@ export function TaskFilters({
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder="Search tasks..."
-        className="rounded-md border border-border px-3 py-1.5 text-sm bg-white w-full sm:w-56"
+        className="rounded-md border border-border px-3 py-1.5 text-sm bg-input w-full sm:w-56"
       />
       <div className="flex gap-1.5 flex-wrap">
         {projects.map((p) => (

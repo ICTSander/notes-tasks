@@ -17,6 +17,7 @@ export default function Home() {
   const [filterProjectIds, setFilterProjectIds] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [showDone, setShowDone] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const fetchProjects = useCallback(async () => {
     const res = await fetch("/api/projects");
@@ -89,15 +90,25 @@ export default function Home() {
   }
 
   return (
-    <div className="space-y-6">
-      <NoteInput
-        projects={projects}
-        mockAi={settings.mockAi}
-        onTasksReviewed={handleTasksReviewed}
-      />
+    <div className="flex flex-col">
+      {/* Header: PLAN: + filter icon */}
+      <div className="flex items-center justify-between py-2">
+        <h1 className="text-xl font-semibold text-text-main">PLAN:</h1>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`p-2 rounded-md transition-colors ${
+            showFilters ? "bg-accent/20 text-accent" : "text-text-muted hover:text-text-main hover:bg-surface-hover"
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+          </svg>
+        </button>
+      </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="flex-1 space-y-4">
+      {/* Collapsible filter panel */}
+      {showFilters && (
+        <div className="bg-surface rounded-lg border border-border p-4 mb-4 space-y-4">
           <TaskFilters
             projects={projects}
             selectedProjectIds={filterProjectIds}
@@ -107,32 +118,45 @@ export default function Home() {
             showDone={showDone}
             onShowDoneToggle={() => setShowDone(!showDone)}
           />
-          <TaskList
-            tasks={tasks}
-            onToggle={handleToggle}
-            onSelect={setSelectedTask}
-            selectedId={selectedTask?.id}
-          />
-        </div>
-        <div className="w-full lg:w-72 space-y-4">
-          {selectedTask && (
-            <TaskSidePanel
-              task={selectedTask}
+          <div className="border-t border-border pt-4">
+            <ProjectManager
               projects={projects}
-              onUpdate={handleUpdateTask}
-              onClose={() => setSelectedTask(null)}
+              onCreated={fetchProjects}
+              onDeleted={() => {
+                fetchProjects();
+                fetchTasks();
+              }}
             />
-          )}
-          <ProjectManager
-            projects={projects}
-            onCreated={fetchProjects}
-            onDeleted={() => {
-              fetchProjects();
-              fetchTasks();
-            }}
-          />
+          </div>
         </div>
+      )}
+
+      {/* Task list — add bottom padding for the fixed input bar */}
+      <div className="pb-20">
+        <TaskList
+          tasks={tasks}
+          onToggle={handleToggle}
+          onSelect={setSelectedTask}
+          selectedId={selectedTask?.id}
+        />
       </div>
+
+      {/* Fixed bottom input bar */}
+      <NoteInput
+        projects={projects}
+        mockAi={settings.mockAi}
+        onTasksReviewed={handleTasksReviewed}
+      />
+
+      {/* Task edit modal */}
+      {selectedTask && (
+        <TaskSidePanel
+          task={selectedTask}
+          projects={projects}
+          onUpdate={handleUpdateTask}
+          onClose={() => setSelectedTask(null)}
+        />
+      )}
     </div>
   );
 }

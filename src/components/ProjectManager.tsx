@@ -67,7 +67,7 @@ export function ProjectManager({ projects, onCreated, onDeleted }: Props) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Project name"
-            className="flex-1 rounded-md border border-border px-3 py-1.5 text-sm bg-white"
+            className="flex-1 rounded-md border border-border px-3 py-1.5 text-sm bg-input"
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
           />
           <div className="flex gap-1 items-center">
@@ -105,7 +105,7 @@ export function ProjectManager({ projects, onCreated, onDeleted }: Props) {
                 onChange={(e) => setEditName(e.target.value)}
                 onBlur={() => handleRename(p.id)}
                 onKeyDown={(e) => e.key === "Enter" && handleRename(p.id)}
-                className="flex-1 text-sm border border-border rounded px-2 py-0.5 bg-white"
+                className="flex-1 text-sm border border-border rounded px-2 py-0.5 bg-input"
                 autoFocus
               />
             ) : (

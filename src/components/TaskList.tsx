@@ -10,11 +10,11 @@ interface Props {
 }
 
 const priorityColors: Record<number, string> = {
-  1: "bg-gray-200 text-gray-600",
-  2: "bg-blue-100 text-blue-700",
-  3: "bg-yellow-100 text-yellow-700",
-  4: "bg-orange-100 text-orange-700",
-  5: "bg-red-100 text-red-700",
+  1: "bg-gray-700 text-gray-300",
+  2: "bg-blue-900/50 text-blue-300",
+  3: "bg-yellow-900/50 text-yellow-300",
+  4: "bg-orange-900/50 text-orange-300",
+  5: "bg-red-900/50 text-red-300",
 };
 
 const priorityLabels: Record<number, string> = {
@@ -38,7 +38,7 @@ export function TaskList({ tasks, onToggle, onSelect, selectedId }: Props) {
           key={task.id}
           onClick={() => onSelect(task)}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors group ${
-            selectedId === task.id ? "bg-blue-50 border border-accent/20" : "hover:bg-gray-50"
+            selectedId === task.id ? "bg-accent/10 border border-accent/20" : "hover:bg-surface-hover"
           } ${task.status === "DONE" ? "opacity-60" : ""}`}
         >
           <input

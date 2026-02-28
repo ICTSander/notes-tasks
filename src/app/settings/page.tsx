@@ -72,7 +72,7 @@ export default function SettingsPage() {
             <button
               onClick={handleToggleMock}
               className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ml-4 ${
-                settings.mockAi ? "bg-accent" : "bg-gray-300"
+                settings.mockAi ? "bg-accent" : "bg-white/20"
               }`}
             >
               <span
@@ -83,7 +83,7 @@ export default function SettingsPage() {
             </button>
           </label>
           {warning && (
-            <p className="text-xs text-orange-600 mt-2 bg-orange-50 rounded-md px-3 py-2">
+            <p className="text-xs text-orange-400 mt-2 bg-orange-500/10 rounded-md px-3 py-2">
               {warning}
             </p>
           )}
@@ -102,7 +102,7 @@ export default function SettingsPage() {
             }
             min={15}
             max={720}
-            className="rounded-md border border-border px-3 py-2 text-[16px] bg-white w-32"
+            className="rounded-md border border-border px-3 py-2 text-[16px] bg-input w-32"
           />
           <p className="text-xs text-text-muted mt-1">
             How many minutes per workday you want to plan for (15-720).
@@ -122,7 +122,7 @@ export default function SettingsPage() {
                 className={`w-10 h-10 rounded-lg text-xs font-medium transition-colors ${
                   settings.workdays[idx]
                     ? "bg-accent text-white"
-                    : "bg-gray-100 text-text-muted hover:bg-gray-200"
+                    : "bg-surface-hover text-text-muted hover:bg-white/10"
                 }`}
               >
                 {label}
@@ -142,13 +142,13 @@ export default function SettingsPage() {
             className={`w-2 h-2 rounded-full ${
               status?.hasAnthropicKey || status?.hasOpenAIKey
                 ? "bg-green-500"
-                : "bg-gray-400"
+                : "bg-gray-600"
             }`}
           />
           <span className="text-sm text-text-main">{providerLabel}</span>
         </div>
         <p className="text-xs text-text-muted">
-          Set <code className="bg-gray-100 px-1 rounded">ANTHROPIC_API_KEY</code> in your
+          Set <code className="bg-surface-hover px-1 rounded">ANTHROPIC_API_KEY</code> in your
           environment variables (or Vercel project settings) to use Claude for rewriting.
           When Mock AI is enabled above, the real provider is bypassed.
         </p>

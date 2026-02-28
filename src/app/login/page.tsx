@@ -56,7 +56,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
                 autoFocus
-                className="w-full rounded-md border border-border px-3 py-2.5 text-[16px] sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent"
+                className="w-full rounded-md border border-border px-3 py-2.5 text-[16px] sm:text-sm bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent"
               />
             </div>
 

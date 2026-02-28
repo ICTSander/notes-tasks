@@ -95,112 +95,121 @@ export function NoteInput({ projects, mockAi, onTasksReviewed }: Props) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="bg-surface rounded-lg border border-border p-4">
-        <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide mb-3">
-          Quick Note
-        </h2>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <textarea
+    <>
+      {/* Fixed bottom input bar */}
+      <div className="fixed bottom-14 sm:bottom-0 left-0 right-0 z-20 bg-surface border-t border-border px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <div className="max-w-5xl mx-auto flex items-center gap-2">
+          <select
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            className="rounded-md border border-border px-2 py-2 text-xs bg-input shrink-0 max-w-[100px]"
+          >
+            <option value="">No project</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Type your messy note here... e.g. 'need to call dentist, buy groceries, and finish report by tomorrow'"
-            className="flex-1 rounded-md border border-border px-3 py-2.5 text-[16px] sm:text-sm resize-none bg-white"
-            rows={2}
+            placeholder="describe task..."
+            className="flex-1 rounded-md border border-border px-3 py-2 text-[16px] sm:text-sm bg-input min-w-0"
             onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleAdd();
+              if (e.key === "Enter") handleAdd();
             }}
           />
-          <div className="flex sm:flex-col gap-2">
-            <select
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-              className="rounded-md border border-border px-3 py-2.5 text-[16px] sm:text-sm bg-white min-h-[44px]"
-            >
-              <option value="">No project</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleAdd}
-              disabled={loading || !text.trim()}
-              className="px-4 py-2.5 bg-accent text-white rounded-md text-sm font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px]"
-            >
-              {loading ? "Processing..." : "Add"}
-            </button>
-          </div>
+          <button
+            onClick={handleAdd}
+            disabled={loading || !text.trim()}
+            className="w-10 h-10 flex items-center justify-center bg-accent text-white rounded-md text-lg font-bold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
+          >
+            {loading ? (
+              <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              "+"
+            )}
+          </button>
         </div>
-        {error && <p className="text-danger text-sm mt-2">{error}</p>}
+        {error && (
+          <p className="text-danger text-xs mt-1 max-w-5xl mx-auto">{error}</p>
+        )}
       </div>
 
+      {/* Suggestion modal overlay */}
       {suggestions.length > 0 && (
-        <div className="bg-surface rounded-lg border border-border p-4">
-          <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wide mb-3">
-            Suggested Tasks
-          </h3>
-          <div className="space-y-2">
-            {suggestions.map((s, idx) => (
-              <div
-                key={idx}
-                className={`flex items-start gap-3 p-3 rounded-md border transition-colors ${
-                  s.selected ? "border-accent/30 bg-blue-50/50" : "border-border bg-gray-50/50"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={s.selected}
-                  onChange={() => handleToggle(idx)}
-                  className="mt-1 h-4 w-4 rounded accent-accent"
-                />
-                <div className="flex-1 min-w-0">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={handleDiscard} />
+          <div className="relative bg-surface rounded-t-xl sm:rounded-xl border border-border p-4 w-full sm:max-w-lg max-h-[80vh] overflow-y-auto mx-0 sm:mx-4">
+            <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wide mb-3">
+              Suggested Tasks
+            </h3>
+            <div className="space-y-2">
+              {suggestions.map((s, idx) => (
+                <div
+                  key={idx}
+                  className={`flex items-start gap-3 p-3 rounded-md border transition-colors ${
+                    s.selected ? "border-accent/30 bg-accent/10" : "border-border bg-surface-hover"
+                  }`}
+                >
                   <input
-                    type="text"
-                    value={s.title}
-                    onChange={(e) => handleTitleChange(idx, e.target.value)}
-                    className="w-full text-sm font-medium bg-transparent border-none p-0"
+                    type="checkbox"
+                    checked={s.selected}
+                    onChange={() => handleToggle(idx)}
+                    className="mt-1 h-4 w-4 rounded accent-accent"
                   />
-                  <div className="flex items-center gap-3 mt-1 text-xs text-text-muted">
-                    <span>{priorityLabel(s.priority ?? 3)}</span>
-                    <label className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        value={s.estimateMinutes ?? 30}
-                        onChange={(e) => handleEstimateChange(idx, Math.max(5, Math.min(480, Number(e.target.value) || 5)))}
-                        min={5}
-                        max={480}
-                        className="w-14 rounded border border-border px-1.5 py-0.5 text-xs bg-white text-text-main"
-                      />
-                      min
-                    </label>
-                    {s.dueDate && (
-                      <span>Due: {new Date(s.dueDate).toLocaleDateString()}</span>
-                    )}
+                  <div className="flex-1 min-w-0">
+                    <input
+                      type="text"
+                      value={s.title}
+                      onChange={(e) => handleTitleChange(idx, e.target.value)}
+                      className="w-full text-sm font-medium bg-transparent border-none p-0"
+                    />
+                    <div className="flex items-center gap-3 mt-1 text-xs text-text-muted">
+                      <span>{priorityLabel(s.priority ?? 3)}</span>
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          value={s.estimateMinutes ?? 30}
+                          onChange={(e) => handleEstimateChange(idx, Math.max(5, Math.min(480, Number(e.target.value) || 5)))}
+                          min={5}
+                          max={480}
+                          className="w-14 rounded border border-border px-1.5 py-0.5 text-xs bg-input text-text-main"
+                        />
+                        min
+                      </label>
+                      {s.dueDate && (
+                        <span>Due: {new Date(s.dueDate).toLocaleDateString()}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2 mt-4">
-            <button
-              onClick={handleSave}
-              disabled={suggestions.filter((s) => s.selected).length === 0}
-              className="px-4 py-2 bg-accent text-white rounded-md text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors"
-            >
-              Add {suggestions.filter((s) => s.selected).length} task
-              {suggestions.filter((s) => s.selected).length !== 1 && "s"}
-            </button>
-            <button
-              onClick={handleDiscard}
-              className="px-4 py-2 text-text-muted rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
-            >
-              Discard
-            </button>
+              ))}
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={handleSave}
+                disabled={suggestions.filter((s) => s.selected).length === 0}
+                className="px-4 py-2 bg-accent text-white rounded-md text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors"
+              >
+                Add {suggestions.filter((s) => s.selected).length} task
+                {suggestions.filter((s) => s.selected).length !== 1 && "s"}
+              </button>
+              <button
+                onClick={handleDiscard}
+                className="px-4 py-2 text-text-muted rounded-md text-sm font-medium hover:bg-surface-hover transition-colors"
+              >
+                Discard
+              </button>
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
