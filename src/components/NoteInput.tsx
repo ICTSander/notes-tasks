@@ -61,6 +61,12 @@ export function NoteInput({ projects, mockAi, onTasksReviewed }: Props) {
     );
   }
 
+  function handleEstimateChange(idx: number, estimateMinutes: number) {
+    setSuggestions((prev) =>
+      prev.map((s, i) => (i === idx ? { ...s, estimateMinutes } : s))
+    );
+  }
+
   function handleToggle(idx: number) {
     setSuggestions((prev) =>
       prev.map((s, i) => (i === idx ? { ...s, selected: !s.selected } : s))
@@ -156,9 +162,19 @@ export function NoteInput({ projects, mockAi, onTasksReviewed }: Props) {
                     onChange={(e) => handleTitleChange(idx, e.target.value)}
                     className="w-full text-sm font-medium bg-transparent border-none p-0"
                   />
-                  <div className="flex gap-3 mt-1 text-xs text-text-muted">
+                  <div className="flex items-center gap-3 mt-1 text-xs text-text-muted">
                     <span>{priorityLabel(s.priority ?? 3)}</span>
-                    <span>{s.estimateMinutes ?? 30}min</span>
+                    <label className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        value={s.estimateMinutes ?? 30}
+                        onChange={(e) => handleEstimateChange(idx, Math.max(5, Math.min(480, Number(e.target.value) || 5)))}
+                        min={5}
+                        max={480}
+                        className="w-14 rounded border border-border px-1.5 py-0.5 text-xs bg-white text-text-main"
+                      />
+                      min
+                    </label>
                     {s.dueDate && (
                       <span>Due: {new Date(s.dueDate).toLocaleDateString()}</span>
                     )}

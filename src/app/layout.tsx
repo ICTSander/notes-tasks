@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
@@ -31,21 +32,25 @@ export const viewport: Viewport = {
   themeColor: "#3b82f6",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("session");
+  const isAuthenticated = session?.value?.startsWith("authenticated.");
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} font-sans antialiased`}>
         <div className="min-h-screen flex flex-col">
-          <Nav />
-          <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-6">
+          {isAuthenticated && <Nav />}
+          <main className={`flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 ${isAuthenticated ? "pb-24 sm:pb-6" : ""}`}>
             {children}
           </main>
         </div>
-        <ServiceWorkerRegister />
+        {isAuthenticated && <ServiceWorkerRegister />}
       </body>
     </html>
   );

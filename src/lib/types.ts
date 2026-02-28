@@ -45,7 +45,7 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  mockAi: true,
+  mockAi: false,
   dailyMinutes: 120,
   workdays: [false, true, true, true, true, true, false], // Sun=0 .. Sat=6
 };
