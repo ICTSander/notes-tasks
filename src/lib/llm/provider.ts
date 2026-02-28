@@ -2,18 +2,24 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { SuggestedTask } from "@/lib/types";
 import { mockRewrite } from "./mock";
 
-const SYSTEM_PROMPT = `You are a task extraction assistant. Given raw text (quick notes), convert them into clear, actionable tasks.
+const SYSTEM_PROMPT = `You are a task extraction assistant. Users type quick, messy notes — often informal, with bad grammar, shorthand, or multiple things crammed together. Your job is to SPLIT them into separate, clear tasks.
 
-Rules:
-- Start each task title with a verb (Call, Send, Plan, Review, etc.)
+Critical rules:
+- ALWAYS split the input into MULTIPLE tasks when more than one activity is mentioned, even if they're written as one run-on sentence
+- Look for separators like commas, "and", "also", "then", "after", or just context switches between different activities
+- Start each task title with a clear action verb (Go to, Buy, Call, Send, Finish, etc.)
+- Rewrite messy/informal text into clean, professional task titles
+- The user may write in any language — keep the tasks in the same language as the input
 - Return 1-6 tasks max
 - Keep titles short (under 80 chars)
-- Set priority 1-5 (5 = most urgent)
-- Estimate minutes realistically
-- Detect deadlines from the text (today, tomorrow, specific dates)
-- Return valid JSON only, no markdown fences
+- Set priority 1-5 (5 = most urgent). Default to 3 unless urgency is implied
+- Estimate minutes realistically based on the activity type
+- Detect deadlines from context (today, tomorrow, this week, specific dates, times)
 
-Output format (JSON array):
+Example input: "Handle gym with lars en kyran, get protein aldi got to work after"
+Example output: 3 tasks → "Go to the gym with Lars and Kyran", "Buy protein at Aldi", "Go to work"
+
+Output format (JSON array, no markdown fences):
 [
   {
     "title": "string",
