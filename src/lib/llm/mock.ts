@@ -76,7 +76,7 @@ function startsWithVerb(text: string): boolean {
 
 function stripPrefix(text: string): string {
   return text.replace(
-    /^(i\s+)?(need\s+to|have\s+to|should|must|gotta|gonna|want\s+to|got\s+to)\s+/i,
+    /^(i\s+)?(need\s+to|have\s+to|should|must|gotta|gonna|want\s+to|got\s+to|do)\s+/i,
     ""
   );
 }
@@ -97,9 +97,9 @@ function makeActionable(text: string): string {
 }
 
 export function mockRewrite(text: string): SuggestedTask[] {
-  // Split by common delimiters: periods, semicolons, newlines, "also", "and" (between clauses)
+  // Split by common delimiters: commas, periods, semicolons, newlines, "and", "also", "then"
   const parts = text
-    .split(/[.;\n]+|(?:,?\s+(?:also|and also|and then)\s+)|(?:,\s+and\s+)/)
+    .split(/[.;\n]+|,\s*|\s+(?:and|also|and also|and then|then)\s+/)
     .map((s) => s.trim())
     .filter((s) => s.length > 2);
 
