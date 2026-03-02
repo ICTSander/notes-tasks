@@ -35,23 +35,26 @@ export function QuickCreateSheet({ open, onClose }: QuickCreateSheetProps) {
       {open && (
         <>
           {/* Backdrop */}
-          <motion.div
-            className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
+          <div className="fixed inset-0" style={{ zIndex: 60 }}>
+            <motion.div
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onClose}
+            />
+          </div>
 
           {/* Sheet */}
-          <motion.div
-            className="fixed bottom-0 left-0 right-0 z-[70] max-w-lg mx-auto"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-          >
-            <div className="rounded-t-3xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-[#0E1338] border border-white/10 border-b-0 shadow-2xl">
+          <div className="fixed bottom-0 left-0 right-0" style={{ zIndex: 70 }}>
+            <motion.div
+              className="max-w-lg mx-auto"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            >
+              <div className="rounded-t-3xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-[#0E1338] border border-white/10 border-b-0 shadow-2xl">
               {/* Handle */}
               <div className="w-10 h-1 rounded-full bg-t3/30 mx-auto mb-5" />
 
@@ -146,8 +149,9 @@ export function QuickCreateSheet({ open, onClose }: QuickCreateSheetProps) {
               >
                 {mode === "note" ? "Create Note" : "Create Task"}
               </button>
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

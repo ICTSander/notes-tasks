@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 interface Props {
   projects: { id: string; name: string; color: string | null }[];
   selectedProjectIds: string[];
@@ -26,18 +28,19 @@ export function TaskFilters({
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder="Search tasks..."
-        className="rounded-md border border-border px-3 py-1.5 text-sm bg-input w-full sm:w-56"
+        className="rounded-[12px] border border-glass-border px-3 py-2 text-sm bg-glass text-t1 placeholder:text-t3 backdrop-blur-xl w-full sm:w-56"
       />
       <div className="flex gap-1.5 flex-wrap">
         {projects.map((p) => (
           <button
             key={p.id}
             onClick={() => onProjectToggle(p.id)}
-            className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors border ${
+            className={cn(
+              "text-xs px-2.5 py-1 rounded-full font-medium transition-all duration-200 border",
               selectedProjectIds.includes(p.id)
                 ? "border-transparent text-white"
-                : "border-border text-text-muted hover:text-text-main"
-            }`}
+                : "border-glass-border text-t3 hover:text-t1"
+            )}
             style={
               selectedProjectIds.includes(p.id)
                 ? { backgroundColor: p.color || "#6b7280" }
@@ -48,12 +51,12 @@ export function TaskFilters({
           </button>
         ))}
       </div>
-      <label className="flex items-center gap-1.5 text-xs text-text-muted ml-auto cursor-pointer whitespace-nowrap">
+      <label className="flex items-center gap-1.5 text-xs text-t3 ml-auto cursor-pointer whitespace-nowrap">
         <input
           type="checkbox"
           checked={showDone}
           onChange={onShowDoneToggle}
-          className="accent-accent"
+          className="accent-[#7C3AED]"
         />
         Show done
       </label>

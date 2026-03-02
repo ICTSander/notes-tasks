@@ -74,6 +74,10 @@
   --radius-card: 20px;
   --radius-btn: 12px;
   --radius-chip: 9999px;
+
+  /* Z-index scale for modals/overlays */
+  --z-index-60: 60;
+  --z-index-70: 70;
 }
 
 /* ---- Base ---- */

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { ProjectWithCount } from "@/lib/types";
 
-const PRESET_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+const PRESET_COLORS = ["#7C3AED", "#06B6D4", "#10b981", "#f59e0b", "#EC4899", "#ef4444"];
 
 interface Props {
   projects: ProjectWithCount[];
@@ -47,14 +47,12 @@ export function ProjectManager({ projects, onCreated, onDeleted }: Props) {
   }
 
   return (
-    <div className="bg-surface rounded-lg border border-border p-4">
+    <div className="glass p-4">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
-          Projects
-        </h2>
+        <h2 className="text-sm font-bold text-t2 uppercase tracking-wider">Projects</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="text-xs text-accent hover:text-blue-600 font-medium"
+          className="text-xs text-accent-light hover:text-accent font-medium transition-colors"
         >
           {showForm ? "Cancel" : "+ New"}
         </button>
@@ -67,7 +65,7 @@ export function ProjectManager({ projects, onCreated, onDeleted }: Props) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Project name"
-            className="flex-1 rounded-md border border-border px-3 py-1.5 text-sm bg-input"
+            className="flex-1 rounded-[12px] border border-glass-border px-3 py-1.5 text-sm bg-glass text-t1 placeholder:text-t3 backdrop-blur-xl"
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
           />
           <div className="flex gap-1 items-center">
@@ -76,7 +74,7 @@ export function ProjectManager({ projects, onCreated, onDeleted }: Props) {
                 key={c}
                 onClick={() => setColor(c)}
                 className={`w-5 h-5 rounded-full border-2 transition-all ${
-                  color === c ? "border-text-main scale-110" : "border-transparent"
+                  color === c ? "border-t1 scale-110" : "border-transparent"
                 }`}
                 style={{ backgroundColor: c }}
               />
@@ -84,7 +82,7 @@ export function ProjectManager({ projects, onCreated, onDeleted }: Props) {
           </div>
           <button
             onClick={handleCreate}
-            className="px-3 py-1.5 bg-accent text-white rounded-md text-sm font-medium hover:bg-blue-600 transition-colors"
+            className="px-3 py-1.5 grad-a text-white rounded-[12px] text-sm font-medium transition-all"
           >
             Add
           </button>
@@ -94,10 +92,7 @@ export function ProjectManager({ projects, onCreated, onDeleted }: Props) {
       <div className="space-y-1">
         {projects.map((p) => (
           <div key={p.id} className="flex items-center gap-2 py-1.5 group">
-            <div
-              className="w-3 h-3 rounded-full shrink-0"
-              style={{ backgroundColor: p.color || "#6b7280" }}
-            />
+            <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: p.color || "#6b7280" }} />
             {editId === p.id ? (
               <input
                 type="text"
@@ -105,35 +100,26 @@ export function ProjectManager({ projects, onCreated, onDeleted }: Props) {
                 onChange={(e) => setEditName(e.target.value)}
                 onBlur={() => handleRename(p.id)}
                 onKeyDown={(e) => e.key === "Enter" && handleRename(p.id)}
-                className="flex-1 text-sm border border-border rounded px-2 py-0.5 bg-input"
+                className="flex-1 text-sm border border-glass-border rounded-[8px] px-2 py-0.5 bg-glass text-t1"
                 autoFocus
               />
             ) : (
-              <span className="flex-1 text-sm text-text-main">{p.name}</span>
+              <span className="flex-1 text-sm text-t1">{p.name}</span>
             )}
-            <span className="text-xs text-text-muted">{p._count.tasks}</span>
+            <span className="text-xs text-t3">{p._count.tasks}</span>
             <div className="hidden group-hover:flex gap-1">
               <button
-                onClick={() => {
-                  setEditId(p.id);
-                  setEditName(p.name);
-                }}
-                className="text-xs text-text-muted hover:text-text-main"
-              >
-                Edit
-              </button>
+                onClick={() => { setEditId(p.id); setEditName(p.name); }}
+                className="text-xs text-t3 hover:text-t1"
+              >Edit</button>
               <button
                 onClick={() => handleDelete(p.id)}
-                className="text-xs text-danger hover:text-red-600"
-              >
-                Del
-              </button>
+                className="text-xs text-danger hover:text-red-400"
+              >Del</button>
             </div>
           </div>
         ))}
-        {projects.length === 0 && (
-          <p className="text-xs text-text-muted py-1">No projects yet</p>
-        )}
+        {projects.length === 0 && <p className="text-xs text-t3 py-1">No projects yet</p>}
       </div>
     </div>
   );
