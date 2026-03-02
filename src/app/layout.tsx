@@ -1,17 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
-import { Nav } from "@/components/Nav";
+import { AppShell } from "@/components/AppShell";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Notes → Tasks",
+  title: "Notes \u2192 Tasks",
   description: "Convert messy notes into clear, actionable tasks",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -29,7 +29,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#0b0d14",
+  themeColor: "#070A16",
 };
 
 export default async function RootLayout({
@@ -43,13 +43,14 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} font-sans antialiased`}>
-        <div className="min-h-screen flex flex-col">
-          {isAuthenticated && <Nav />}
-          <main className={`flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 ${isAuthenticated ? "pb-24 sm:pb-6" : ""}`}>
+      <body className={`${inter.variable} font-sans antialiased min-h-screen bg-bg-0`}>
+        {isAuthenticated ? (
+          <AppShell>{children}</AppShell>
+        ) : (
+          <main className="flex-1 w-full max-w-[1000px] mx-auto px-4 sm:px-8 py-6">
             {children}
           </main>
-        </div>
+        )}
         {isAuthenticated && <ServiceWorkerRegister />}
       </body>
     </html>

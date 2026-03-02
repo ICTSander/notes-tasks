@@ -1,162 +1,126 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { NoteInput } from "@/components/NoteInput";
-import { TaskList } from "@/components/TaskList";
-import { TaskSidePanel } from "@/components/TaskSidePanel";
-import { TaskFilters } from "@/components/TaskFilters";
-import { ProjectManager } from "@/components/ProjectManager";
-import { useSettings } from "@/lib/useSettings";
-import type { TaskWithProject, ProjectWithCount, SuggestedTask } from "@/lib/types";
+import { useState } from "react";
+import { TopBar } from "@/components/TopBar";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { GradientBlob } from "@/components/ui/GradientBlob";
+import { Chip } from "@/components/ui/Chip";
+import { Sparkline } from "@/components/ui/Sparkline";
+import { TaskCard } from "@/components/TaskCard";
+import { TrendingUp, Zap, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import {
+  mockTasks,
+  getTaskStats,
+  sparklineData,
+} from "@/lib/mock";
 
-export default function Home() {
-  const { settings } = useSettings();
-  const [projects, setProjects] = useState<ProjectWithCount[]>([]);
-  const [tasks, setTasks] = useState<TaskWithProject[]>([]);
-  const [selectedTask, setSelectedTask] = useState<TaskWithProject | null>(null);
-  const [filterProjectIds, setFilterProjectIds] = useState<string[]>([]);
-  const [search, setSearch] = useState("");
-  const [showDone, setShowDone] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+export default function HomePage() {
+  const [tasks, setTasks] = useState(mockTasks);
+  const stats = getTaskStats(tasks);
+  const upcomingTasks = tasks.filter((t) => !t.done).slice(0, 3);
+  const progress = stats.totalToday > 0
+    ? Math.round((stats.doneToday / stats.totalToday) * 100)
+    : 0;
 
-  const fetchProjects = useCallback(async () => {
-    const res = await fetch("/api/projects");
-    const data = await res.json();
-    setProjects(data);
-  }, []);
-
-  const fetchTasks = useCallback(async () => {
-    const params = new URLSearchParams();
-    if (!showDone) params.set("status", "OPEN");
-    else params.set("status", "ALL");
-    if (filterProjectIds.length > 0) params.set("projectIds", filterProjectIds.join(","));
-    if (search.trim()) params.set("search", search.trim());
-
-    const res = await fetch(`/api/tasks?${params}`);
-    const data = await res.json();
-    setTasks(data);
-  }, [showDone, filterProjectIds, search]);
-
-  useEffect(() => {
-    fetchProjects();
-    fetchTasks();
-  }, [fetchProjects, fetchTasks]);
-
-  async function handleTasksReviewed(
-    suggestedTasks: SuggestedTask[],
-    projectId: string | null,
-    noteId: string
-  ) {
-    await fetch("/api/tasks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tasks: suggestedTasks.map((t) => ({
-          ...t,
-          projectId,
-          sourceNoteId: noteId,
-        })),
-      }),
-    });
-    fetchTasks();
-    fetchProjects();
-  }
-
-  async function handleToggle(id: string, status: string) {
-    await fetch(`/api/tasks/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    fetchTasks();
-  }
-
-  async function handleUpdateTask(id: string, data: Record<string, unknown>) {
-    const res = await fetch(`/api/tasks/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const updated = await res.json();
-    setSelectedTask(updated);
-    fetchTasks();
-    fetchProjects();
-  }
-
-  function handleProjectToggle(id: string) {
-    setFilterProjectIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+  function handleToggle(id: string) {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
     );
   }
 
   return (
-    <div className="flex flex-col">
-      {/* Header: PLAN: + filter icon */}
-      <div className="flex items-center justify-between py-2">
-        <h1 className="text-xl font-semibold text-text-main">PLAN:</h1>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`p-2 rounded-md transition-colors ${
-            showFilters ? "bg-accent/20 text-accent" : "text-text-muted hover:text-text-main hover:bg-surface-hover"
-          }`}
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
-          </svg>
-        </button>
-      </div>
+    <div className="space-y-6">
+      <TopBar title="Dashboard" />
 
-      {/* Collapsible filter panel */}
-      {showFilters && (
-        <div className="bg-surface rounded-lg border border-border p-4 mb-4 space-y-4">
-          <TaskFilters
-            projects={projects}
-            selectedProjectIds={filterProjectIds}
-            onProjectToggle={handleProjectToggle}
-            search={search}
-            onSearchChange={setSearch}
-            showDone={showDone}
-            onShowDoneToggle={() => setShowDone(!showDone)}
-          />
-          <div className="border-t border-border pt-4">
-            <ProjectManager
-              projects={projects}
-              onCreated={fetchProjects}
-              onDeleted={() => {
-                fetchProjects();
-                fetchTasks();
-              }}
-            />
+      {/* Hero Glass Card */}
+      <GlassCard className="relative overflow-hidden p-6">
+        <GradientBlob variant="a" size={180} className="-top-10 -right-10" />
+        <GradientBlob variant="b" size={120} className="bottom-0 -left-8" />
+
+        <div className="relative z-10">
+          <p className="text-sm text-t3 font-medium mb-1">Today</p>
+          <h2 className="text-3xl font-bold text-t1 mb-4">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
+          </h2>
+
+          <div className="flex flex-wrap gap-2 mb-5">
+            <Chip variant="gradient-a" size="md">
+              {stats.totalToday} tasks
+            </Chip>
+            <Chip size="md">
+              {stats.openNotes} notes
+            </Chip>
+            {stats.dueSoon > 0 && (
+              <Chip variant="gradient-b" size="md">
+                {stats.dueSoon} due soon
+              </Chip>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-t3">Daily progress</span>
+              <span className="text-t2 font-semibold">{progress}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+              <div
+                className="h-full rounded-full grad-a transition-all duration-700 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
         </div>
-      )}
+      </GlassCard>
 
-      {/* Task list — add bottom padding for the fixed input bar */}
-      <div className="pb-20">
-        <TaskList
-          tasks={tasks}
-          onToggle={handleToggle}
-          onSelect={setSelectedTask}
-          selectedId={selectedTask?.id}
-        />
-      </div>
+      {/* Upcoming Tasks */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-bold text-t1">Upcoming</h2>
+          <Link href="/tasks" className="flex items-center gap-1 text-xs text-accent-light hover:text-accent transition-colors">
+            View all <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+        <div className="space-y-2">
+          {upcomingTasks.map((task, i) => (
+            <TaskCard key={task.id} task={task} onToggle={handleToggle} index={i} />
+          ))}
+        </div>
+      </section>
 
-      {/* Fixed bottom input bar */}
-      <NoteInput
-        projects={projects}
-        mockAi={settings.mockAi}
-        onTasksReviewed={handleTasksReviewed}
-      />
+      {/* Focus Stats */}
+      <section>
+        <h2 className="text-lg font-bold text-t1 mb-3">Focus</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <GlassCard className="p-4" strong>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-[8px] bg-accent/15 flex items-center justify-center">
+                <Zap className="w-3.5 h-3.5 text-accent-light" />
+              </div>
+              <span className="text-xs text-t3 font-medium">Productivity</span>
+            </div>
+            <p className="text-2xl font-bold text-t1 mb-1">
+              {stats.doneToday}/{stats.totalToday}
+            </p>
+            <p className="text-[11px] text-t3">tasks completed today</p>
+          </GlassCard>
 
-      {/* Task edit modal */}
-      {selectedTask && (
-        <TaskSidePanel
-          task={selectedTask}
-          projects={projects}
-          onUpdate={handleUpdateTask}
-          onClose={() => setSelectedTask(null)}
-        />
-      )}
+          <GlassCard className="p-4" strong>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-[8px] bg-cyan/15 flex items-center justify-center">
+                <TrendingUp className="w-3.5 h-3.5 text-cyan" />
+              </div>
+              <span className="text-xs text-t3 font-medium">Activity</span>
+            </div>
+            <Sparkline data={sparklineData} width={100} height={28} className="mb-1" />
+            <p className="text-[11px] text-t3">28 day trend</p>
+          </GlassCard>
+        </div>
+      </section>
     </div>
   );
 }
